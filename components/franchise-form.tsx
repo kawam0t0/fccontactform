@@ -41,6 +41,7 @@ export default function FranchiseForm() {
   const [department, setDepartment] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [companyUrl, setCompanyUrl] = useState("")
   const [splashExperience, setSplashExperience] = useState<SplashExperience>("")
   const [area, setArea] = useState("")
   const [landStatus, setLandStatus] = useState<LandStatus>("")
@@ -106,6 +107,7 @@ export default function FranchiseForm() {
         department,
         email,
         phone,
+        companyUrl,
         experience: splashExperience,
         area,
         landStatus,
@@ -173,6 +175,7 @@ export default function FranchiseForm() {
       { label: "部署名・役職名", value: department, show: isCorporate },
       { label: "メールアドレス", value: email },
       { label: "電話番号", value: phone },
+      { label: "会社URL", value: companyUrl || "—" },
       { label: "スプラッシュンゴーのご利用経験", value: splashExperience },
       { label: "出店希望エリア", value: area },
       {
@@ -289,6 +292,7 @@ export default function FranchiseForm() {
           </h1>
           <div className="mt-6 w-10 h-0.5 bg-white/30" />
           <p className="mt-5 text-sm text-white/60 leading-relaxed max-w-md">
+            下記フォームにご記入のうえ、送信してください。担当者よりご連絡いたします。
           </p>
         </div>
       </div>
@@ -394,6 +398,17 @@ export default function FranchiseForm() {
                 />
               </Field>
 
+              {/* 会社URL（任意） */}
+              <Field id="companyUrl" label="会社URL" note="任意">
+                <LineInput
+                  id="companyUrl"
+                  type="url"
+                  value={companyUrl}
+                  onChange={(v) => setCompanyUrl(v)}
+                  placeholder="https://www.example.co.jp"
+                />
+              </Field>
+
             </div>
 
             <Divider />
@@ -487,7 +502,7 @@ export default function FranchiseForm() {
                       }}
                       className="w-24 bg-transparent border-0 border-b-2 pb-1 text-sm text-[#111827] focus:outline-none transition-colors"
                       style={{ borderBottomColor: tsubo ? BRAND : "#c0cce0" }}
-                      placeholder="例：500"
+                      placeholder="例：50"
                     />
                     <span className="text-sm text-gray-500">坪</span>
                   </div>
@@ -589,7 +604,7 @@ export default function FranchiseForm() {
                 入力内容を確認する
               </button>
               <p className="text-center text-xs text-gray-300 -mt-2">
-                
+                次のページで送信前に内容をご確認いただけます。
               </p>
             </div>
 

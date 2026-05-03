@@ -30,25 +30,26 @@ async function appendToSheet(data: Record<string, string>) {
   const now = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
 
   const row = [
-    now,
-    data.type,
-    data.companyName ?? "",
-    data.name,
-    data.department ?? "",
-    data.email,
-    data.phone,
-    data.experience,
-    data.area,
-    data.landStatus,
-    data.tsubo ?? "",
-    data.steps,
-    data.message ?? "",
+    now,           // A: 受付日時
+    data.type,     // B: お問い合わせ種別
+    data.companyName ?? "",  // C: 貴社名
+    data.name,     // D: お名前
+    data.department ?? "",   // E: 部署名・役職名
+    data.email,    // F: メールアドレス
+    data.phone,    // G: 電話番号
+    data.companyUrl ?? "",   // H: 会社URL（新規追加）
+    data.experience,  // I: ご利用経験
+    data.area,        // J: 出店希望エリア
+    data.landStatus,  // K: 土地の所有状況
+    data.tsubo ?? "", // L: 坪数
+    data.steps,       // M: ご希望の検討ステップ
+    data.message ?? "", // N: ご質問・ご要望
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: sheetId,
     range: `${sheetName}!A1`,
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: "RAW",
     requestBody: { values: [row] },
   })
 }
@@ -85,9 +86,7 @@ function buildHtml(data: Record<string, string>): string {
     ? `この度はスプラッシュンゴーのフランチャイズ加盟にご興味をお持ちいただき、<br>
               誠にありがとうございます。<br><br>
               ご請求いただいた事業説明資料を下記よりご確認いただけます。<br>
-              ご不明な点がございましたら、お気軽にお問い合わせください。<br><br>
-              フランチャイズ問い合わせ担当 <br>
-              ラメザニ raidien@splashbrothers.co.jp`
+              ご不明な点がございましたら、お気軽にお問い合わせください。`
     : `この度はスプラッシュンゴーのフランチャイズ加盟にご興味をお持ちいただき、<br>
               誠にありがとうございます。<br><br>
               お問い合わせ内容を確認のうえ、担当者よりあらためてご連絡いたします。<br>
@@ -236,7 +235,7 @@ ${data.name} 様
 ${bodyText}
 
 【事業説明資料】
-PDF資料はこちら
+PDF資料はこちら → スプラッシュンゴー事業説明資料
 https://drive.google.com/file/d/1-LkZrzeg5eBFyZFMVBXJL1eTzUx1u1pK/view?usp=sharing
 
 ━━━━━━━━━━━━━━━━━━━━━━━
