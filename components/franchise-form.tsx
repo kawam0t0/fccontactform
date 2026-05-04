@@ -35,7 +35,7 @@ export default function FranchiseForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
 
-  const [contactType, setContactType] = useState<ContactType>("")
+  const [contactType, setContactType] = useState<ContactType>("法人")
   const [companyName, setCompanyName] = useState("")
   const [name, setName] = useState("")
   const [department, setDepartment] = useState("")
@@ -71,6 +71,7 @@ export default function FranchiseForm() {
     if (!email.trim()) e.email = "メールアドレスを入力してください"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "正しいメールアドレスを入力してください"
     if (!phone.trim()) e.phone = "電話番号を入力してください"
+    if (isCorporate && !companyUrl.trim()) e.companyUrl = "会社URLを入力してください"
     if (!splashExperience) e.splashExperience = "ご利用経験を選択してください"
     if (!area) e.area = "出店希望エリアを選択してください"
     if (!landStatus) e.landStatus = "土地の所有状況を選択してください"
@@ -398,13 +399,19 @@ export default function FranchiseForm() {
                 />
               </Field>
 
-              {/* 会社URL（任意） */}
-              <Field id="companyUrl" label="会社URL" note="任意">
+              {/* 会社URL */}
+              <Field
+                id="companyUrl"
+                label="会社URL"
+                required={isCorporate}
+                note={!isCorporate ? "任意" : undefined}
+                error={errors.companyUrl}
+              >
                 <LineInput
                   id="companyUrl"
                   type="url"
                   value={companyUrl}
-                  onChange={(v) => setCompanyUrl(v)}
+                  onChange={(v) => { setCompanyUrl(v); setErrors((e) => ({ ...e, companyUrl: "" })) }}
                   placeholder="https://www.example.co.jp"
                 />
               </Field>
