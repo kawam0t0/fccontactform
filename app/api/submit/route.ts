@@ -150,7 +150,7 @@ function buildHtml(data: Record<string, string>): string {
                   <p style="margin:0 0 12px;font-size:11px;color:#6b7280;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">
                     事業説明資料
                   </p>
-                  <a href="https://drive.google.com/file/d/1-LkZrzeg5eBFyZFMVBXJL1eTzUx1u1pK/view?usp=sharing"
+                  <a href="https://drive.google.com/file/d/10dU3Uns4yqzq71jeFZbZJfCyPzZVxcM6/view"
                      style="display:inline-block;background:#004d9c;color:#ffffff;font-size:14px;font-weight:700;
                             text-decoration:none;padding:12px 24px;border-radius:6px;letter-spacing:.03em;">
                     PDF資料はこちら &rarr;
@@ -258,7 +258,7 @@ ${bodyText}
 【事業説明資料】
 本メールに添付のPDFをご覧ください。
 （添付が開けない場合は下記リンクからもご確認いただけます）
-https://drive.google.com/file/d/1-LkZrzeg5eBFyZFMVBXJL1eTzUx1u1pK/view?usp=sharing
+https://drive.google.com/file/d/10dU3Uns4yqzq71jeFZbZJfCyPzZVxcM6/view
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 【お問い合わせ受付内容】
