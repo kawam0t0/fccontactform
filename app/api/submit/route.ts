@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { google } from "googleapis"
 import nodemailer from "nodemailer"
+import { readFile } from "node:fs/promises"
+import path from "node:path"
+
+// ---------------------------------------------------------------------------
+// 添付ファイル — 事業説明資料PDF（assets/ に同梱）
+// ---------------------------------------------------------------------------
+
+const BUSINESS_GUIDE_PATH = path.join(process.cwd(), "assets", "spgo-business-guide.pdf")
+const BUSINESS_GUIDE_FILENAME = "SPLASH'N'GO!_事業説明資料.pdf"
+
+async function loadBusinessGuide(): Promise<Buffer | null> {
+  try {
+    return await readFile(BUSINESS_GUIDE_PATH)
+  } catch (err) {
+    // 添付ファイルが読めなくてもメール送信自体は止めない（本文のリンクで案内）
+    console.error("[submit] 事業説明資料PDFの読み込みに失敗:", err)
+    return null
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Google Sheets auth — サービスアカウント（Sheets のみ）
@@ -85,10 +104,12 @@ function buildHtml(data: Record<string, string>): string {
   const bodyText = isMaterialOnly
     ? `この度はスプラッシュンゴーのフランチャイズ加盟にご興味をお持ちいただき、<br>
               誠にありがとうございます。<br><br>
-              ご請求いただいた事業説明資料を下記よりご確認いただけます。<br>
+              ご請求いただいた事業説明資料を本メールに添付しております。<br>
+              （添付が開けない場合は、下記リンクからもご確認いただけます）<br>
               ご不明な点がございましたら、お気軽にお問い合わせください。`
     : `この度はスプラッシュンゴーのフランチャイズ加盟にご興味をお持ちいただき、<br>
               誠にありがとうございます。<br><br>
+              事業説明資料を本メールに添付しておりますので、ぜひご覧ください。<br>
               お問い合わせ内容を確認のうえ、担当者よりあらためてご連絡いたします。<br>
               今しばらくお待ちくださいますよう、よろしくお願い申し上げます。`
 
@@ -223,8 +244,8 @@ function buildText(data: Record<string, string>): string {
     (steps.includes(MATERIAL_ONLY) && steps.replace(MATERIAL_ONLY, "").replace(/[、,，\s]/g, "") === "")
 
   const bodyText = isMaterialOnly
-    ? `ご請求いただいた事業説明資料を下記よりご確認いただけます。\nご不明な点がございましたら、お気軽にお問い合わせください。`
-    : `お問い合わせ内容を確認のうえ、担当者よりあらためてご連絡いたします。\n今しばらくお待ちくださいますよう、よろしくお願い申し上げます。`
+    ? `ご請求いただいた事業説明資料を本メールに添付しております。\n（添付が開けない場合は、下記リンクからもご確認いただけます）\nご不明な点がございましたら、お気軽にお問い合わせください。`
+    : `事業説明資料を本メールに添付しておりますので、ぜひご覧ください。\nお問い合わせ内容を確認のうえ、担当者よりあらためてご連絡いたします。\n今しばらくお待ちくださいますよう、よろしくお願い申し上げます。`
 
   return `
 ${data.name} 様
@@ -235,7 +256,8 @@ ${data.name} 様
 ${bodyText}
 
 【事業説明資料】
-PDF資料はこちら → スプラッシュンゴー事業説明資料
+本メールに添付のPDFをご覧ください。
+（添付が開けない場合は下記リンクからもご確認いただけます）
 https://drive.google.com/file/d/1-LkZrzeg5eBFyZFMVBXJL1eTzUx1u1pK/view?usp=sharing
 
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -257,6 +279,7 @@ SPLASH'N'GO! フランチャイズ加盟担当
 async function sendReplyEmail(data: Record<string, string>) {
   const transporter = getTransporter()
   const infoAddress = "info@splashbrothers.co.jp"
+  const pdf = await loadBusinessGuide()
 
   await transporter.sendMail({
     from: `"SPLASH'N'GO! フランチャイズ担当" <${infoAddress}>`,
@@ -265,6 +288,15 @@ async function sendReplyEmail(data: Record<string, string>) {
     subject: "【お問い合わせ受付】スプラッシュンゴー フランチャイズ加盟お問い合わせを受け付けました",
     text: buildText(data),
     html: buildHtml(data),
+    attachments: pdf
+      ? [
+          {
+            filename: BUSINESS_GUIDE_FILENAME,
+            content: pdf,
+            contentType: "application/pdf",
+          },
+        ]
+      : [],
   })
 }
 

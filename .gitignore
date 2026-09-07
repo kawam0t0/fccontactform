@@ -16,3 +16,4 @@ node_modules
 .DS_Store.env.local
 splashbrothers-db1-0357b96bf1c4.json
 splashbrothers-db1-0357b96bf1c4.json
+tsconfig.tsbuildinfo
