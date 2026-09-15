@@ -301,6 +301,40 @@ async function sendReplyEmail(data: Record<string, string>) {
 }
 
 // ---------------------------------------------------------------------------
+// Google Chat notification
+// ---------------------------------------------------------------------------
+
+async function notifyGoogleChat(data: Record<string, string>) {
+  const webhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL
+  if (!webhookUrl) {
+    throw new Error("GOOGLE_CHAT_WEBHOOK_URL is not configured")
+  }
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+    body: JSON.stringify({
+      text: [
+        "【新しいフランチャイズお問い合わせ】",
+        `お名前: ${data.name}`,
+        `お問い合わせ種別: ${data.type}`,
+        data.companyName ? `貴社名: ${data.companyName}` : null,
+        `メールアドレス: ${data.email}`,
+        `電話番号: ${data.phone}`,
+        data.companyUrl ? `会社URL: ${data.companyUrl}` : null,
+        `出店希望エリア: ${data.area}`,
+        `ご希望の検討ステップ: ${data.steps}`,
+      ].filter(Boolean).join("\\n"),
+    }),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(`Google Chat notification failed (${response.status}): ${detail}`)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
 
@@ -315,6 +349,9 @@ export async function POST(req: NextRequest) {
     await Promise.all([
       appendToSheet(data),
       sendReplyEmail(data),
+      notifyGoogleChat(data).catch((error) => {
+        console.error("[submit] Google Chat通知に失敗しました:", error)
+      }),
     ])
 
     return NextResponse.json({ success: true })
