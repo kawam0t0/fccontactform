@@ -324,7 +324,7 @@ async function notifyGoogleChat(data: Record<string, string>) {
         data.companyUrl ? `会社URL: ${data.companyUrl}` : null,
         `出店希望エリア: ${data.area}`,
         `ご希望の検討ステップ: ${data.steps}`,
-      ].filter(Boolean).join("\\n"),
+      ].filter(Boolean).join("\n"),
     }),
   })
 
