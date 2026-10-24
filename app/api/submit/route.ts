@@ -304,34 +304,52 @@ async function sendReplyEmail(data: Record<string, string>) {
 // Google Chat notification
 // ---------------------------------------------------------------------------
 
-async function notifyGoogleChat(data: Record<string, string>) {
-  const webhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL
-  if (!webhookUrl) {
-    throw new Error("GOOGLE_CHAT_WEBHOOK_URL is not configured")
-  }
+// 九州エリア（この都道府県が選択された場合は九州グループにも追加通知）
+const KYUSHU_PREFECTURES = ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県"]
 
+function buildChatText(data: Record<string, string>): string {
+  return [
+    "【新しいフランチャイズお問い合わせ】",
+    `お名前: ${data.name}`,
+    `お問い合わせ種別: ${data.type}`,
+    data.companyName ? `貴社名: ${data.companyName}` : null,
+    `メールアドレス: ${data.email}`,
+    `電話番号: ${data.phone}`,
+    data.companyUrl ? `会社URL: ${data.companyUrl}` : null,
+    `出店希望エリア: ${data.area}`,
+    `ご希望の検討ステップ: ${data.steps}`,
+  ].filter(Boolean).join("\n")
+}
+
+async function postToGoogleChat(webhookUrl: string, text: string) {
   const response = await fetch(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=UTF-8" },
-    body: JSON.stringify({
-      text: [
-        "【新しいフランチャイズお問い合わせ】",
-        `お名前: ${data.name}`,
-        `お問い合わせ種別: ${data.type}`,
-        data.companyName ? `貴社名: ${data.companyName}` : null,
-        `メールアドレス: ${data.email}`,
-        `電話番号: ${data.phone}`,
-        data.companyUrl ? `会社URL: ${data.companyUrl}` : null,
-        `出店希望エリア: ${data.area}`,
-        `ご希望の検討ステップ: ${data.steps}`,
-      ].filter(Boolean).join("\n"),
-    }),
+    body: JSON.stringify({ text }),
   })
 
   if (!response.ok) {
     const detail = await response.text()
     throw new Error(`Google Chat notification failed (${response.status}): ${detail}`)
   }
+}
+
+async function notifyGoogleChat(data: Record<string, string>) {
+  const webhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL
+  if (!webhookUrl) {
+    throw new Error("GOOGLE_CHAT_WEBHOOK_URL is not configured")
+  }
+
+  const text = buildChatText(data)
+  const targets = [webhookUrl]
+
+  // 九州エリアの場合は九州グループにも通知
+  const kyushuWebhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL_KYUSHU
+  if (kyushuWebhookUrl && KYUSHU_PREFECTURES.includes(data.area)) {
+    targets.push(kyushuWebhookUrl)
+  }
+
+  await Promise.all(targets.map((url) => postToGoogleChat(url, text)))
 }
 
 // ---------------------------------------------------------------------------
